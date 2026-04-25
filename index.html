@@ -39,6 +39,11 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         .dias { color: #ffd700; font-size: 2rem; }
+        .tempo-restante {
+            font-size: 1.3rem;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
         .galeria { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 40px 0; }
         .foto { 
             border-radius: 25px; 
@@ -116,7 +121,10 @@
         <div class="apelidos">Pretinha • Bê • Dengo 💕</div>
         
         <div class="contador">
-            💑 Estamos juntos há <span id="diasJuntos" class="dias">0</span> dias! 💕
+            ⏰ Faltam <span id="diasRestantes" class="dias">0</span> dias para 25/04/2026! 💕
+            <div class="tempo-restante" id="tempoDetalhado">
+                00h : 00m : 00s
+            </div>
         </div>
         
         <a href="https://open.spotify.com/track/6iReFZUqV0D4SRluki38LE?si=jtOb2MTqQZiew2lnJuZpJg" class="spotify-btn" target="_blank">
@@ -137,7 +145,7 @@
         </div>
         
         <div class="texto-romantico">
-            <h3>💌 Pra tu, xuxu:</h3>
+            <h3>💌 Pra tu, Xuxu:</h3>
             <p>Eu acho q nunca te disse isso kkkk, mas assim que me iniciei na religião q eu sigo, me cantaram um ponto muito lindo e eu prometi a mim mesmo que um dia eu iria achar alguém pra compartilhar. Nele se falava "<em>Se eu tivesse asas meu amor eu ia voar, voaria o mundo inteiro só pra poder lhe encontrar... Ô iaia, se eu tivesse o mundo eu daria pra iaia.</em>"</p>
             <p>E o que eu quero dizer é que <strong>você virou minha "iaia"</strong>. Você me fez enxergar a vida de forma diferente, me deu arrepios, frio na barriga, vontade de ser melhor... <strong>Obrigado por me escolher, por acreditar em mim, pelos carinhos e risadas sinceras!</strong></p>
             <p><strong>Te amar foi, é e será sempre a minha reza mais bonita.</strong> Quero viver todos os seus sonhos ao seu lado! 💕</p>
@@ -149,16 +157,46 @@
     </div>
 
     <script>
-        // CONTADOR CORRIGIDO (data de hoje - ajusta automaticamente)
+        // ✅ CONTADOR CORRIGIDO: 27/05/2025 até 25/04/2026
+        const dataInicio = new Date('2025-05-27T00:00:00');
+        const dataFim = new Date('2026-04-25T23:59:59');
+
         function atualizarContador() {
-            const hoje = new Date();
-            const dataInicio = new Date(hoje.getFullYear(), 4, 27); // 5/27/2024
-            const diffTime = Math.abs(hoje - dataInicio);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            document.getElementById('diasJuntos').textContent = diffDays;
+            const agora = new Date();
+            
+            // Verifica se estamos no período correto
+            if (agora < dataInicio) {
+                const diasAteInicio = Math.ceil((dataInicio - agora) / (1000 * 60 * 60 * 24));
+                document.getElementById('diasRestantes').textContent = diasAteInicio;
+                document.getElementById('diasRestantes').style.color = '#ff6b6b';
+                document.getElementById('tempoDetalhado').innerHTML = 
+                    `<strong>⏳ Começa em ${diasAteInicio} dias!</strong>`;
+                return;
+            }
+            
+            if (agora > dataFim) {
+                document.getElementById('diasRestantes').textContent = '0';
+                document.getElementById('tempoDetalhado').innerHTML = 
+                    '<strong>🎉 Data especial chegou! 💖</strong>';
+                return;
+            }
+            
+            // Calcula tempo restante
+            const tempoRestante = dataFim - agora;
+            const dias = Math.floor(tempoRestante / (1000 * 60 * 60 * 24));
+            const horas = Math.floor((tempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((tempoRestante % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((tempoRestante % (1000 * 60)) / 1000);
+            
+            document.getElementById('diasRestantes').textContent = dias;
+            document.getElementById('diasRestantes').style.color = '#ffd700';
+            document.getElementById('tempoDetalhado').innerHTML = 
+                `${horas.toString().padStart(2, '0')}h : ${minutos.toString().padStart(2, '0')}m : ${segundos.toString().padStart(2, '0')}s`;
         }
+
+        // Atualiza imediatamente e a cada segundo
         atualizarContador();
-        setInterval(atualizarContador, 60000); // Atualiza a cada minuto
+        setInterval(atualizarContador, 1000);
 
         // CORAÇÕES FLUTUANTES
         setInterval(() => {
@@ -181,15 +219,20 @@
         function openPhoto(index) {
             const modal = document.createElement('div');
             modal.className = 'modal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.9); z-index: 1000; display: flex; 
+                align-items: center; justify-content: center; cursor: zoom-out;
+            `;
             modal.innerHTML = `
                 <img src="${urlsFotos[index-1]}" 
                      alt="Nossa foto ${index}" 
                      onerror="this.src='https://via.placeholder.com/500x600/4169E1/FFFFFF?text=💕+Foto+${index}+💕'; this.style.borderRadius='20px';"
                      style="max-width:90vw;max-height:90vh;border-radius:20px;box-shadow:0 0 60px rgba(255,255,255,0.4);">
-                <button class="close-btn" onclick="this.parentElement.remove();">×</button>
+                <button style="position:absolute;top:20px;right:20px;font-size:2rem;background:none;border:none;color:white;cursor:pointer;" onclick="this.parentElement.remove();">×</button>
             `;
             document.body.appendChild(modal);
-            modal.onclick = (e) => e.target === modal && modal.remove();
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
         }
     </script>
 </body>
