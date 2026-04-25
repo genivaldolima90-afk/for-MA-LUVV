@@ -152,7 +152,7 @@
         // CONTADOR CORRIGIDO (data de hoje - ajusta automaticamente)
         function atualizarContador() {
             const hoje = new Date();
-            const dataInicio = new Date(hoje.getFullYear(), 4, 27); // 27/05/2025
+            const dataInicio = new Date(hoje.getFullYear(), 4, 27); // 5/27/2025
             const diffTime = Math.abs(hoje - dataInicio);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             document.getElementById('diasJuntos').textContent = diffDays;
